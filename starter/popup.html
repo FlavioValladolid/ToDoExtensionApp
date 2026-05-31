@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<!-- Popup de la extensión. Ancho fijo típico de Chrome. -->
+<style>
+  :root {
+    --bg:#fafaf9; --surface:#fff; --sunk:#f4f4f2;
+    --text:#1c1c1a; --muted:#8a8a85; --faint:#b9b9b3;
+    --border:#ececea; --border-strong:#dededb; --hover:#f4f4f2;
+    --accent:#1c1c1a; --on-accent:#fff;
+    --p-alta:oklch(0.63 0.18 25); --p-media:oklch(0.74 0.15 75); --p-baja:oklch(0.62 0.12 250);
+    --radius:9px; --row:10px;
+    --mono:'Geist Mono', ui-monospace, monospace;
+  }
+  html[data-theme="dark"] {
+    --bg:#161614; --surface:#1e1e1c; --sunk:#1a1a18;
+    --text:#f2f2ef; --muted:#8f8f8a; --faint:#5c5c58;
+    --border:#2a2a27; --border-strong:#33332f; --hover:#242421;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; width:380px; height:540px; display:flex; flex-direction:column;
+    background:var(--surface); color:var(--text); overflow:hidden;
+    font-family:'Geist', system-ui, 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* header */
+  .head { display:flex; align-items:center; justify-content:space-between;
+    padding:15px 16px 12px; border-bottom:1px solid var(--border); }
+  .head h1 { margin:0; font-size:17px; font-weight:600; letter-spacing:-.01em; }
+  .count { font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:2px; white-space:nowrap; }
+  .icon-btn { width:32px; height:32px; display:grid; place-items:center; cursor:pointer;
+    background:transparent; border:1px solid var(--border); border-radius:var(--radius); color:var(--muted); }
+  /* tabs */
+  .tabs { display:flex; gap:6px; padding:11px 16px; border-bottom:1px solid var(--border); overflow-x:auto; }
+  .chip { flex-shrink:0; display:flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px;
+    cursor:pointer; font:500 12.5px 'Geist',system-ui,sans-serif; border:1px solid var(--border);
+    background:transparent; color:var(--muted); transition:all .14s; }
+  .chip .n { font-family:var(--mono); font-size:10.5px; opacity:.6; }
+  .chip.active { background:var(--accent); color:var(--on-accent); border-color:transparent; }
+  .chip.active .n { opacity:.8; }
+  /* list */
+  .list { flex:1; overflow-y:auto; padding:6px 8px 10px; }
+  .row { display:flex; align-items:flex-start; gap:11px; padding:var(--row) 8px; border-radius:var(--radius); }
+  .row:hover { background:var(--hover); }
+  .cbx { flex-shrink:0; margin-top:1px; width:20px; height:20px; cursor:pointer; border-radius:min(var(--radius),10px);
+    border:1.6px solid var(--border-strong); background:transparent; display:grid; place-items:center; color:var(--on-accent); transition:all .14s; }
+  .cbx.done { background:var(--accent); border-color:var(--accent); }
+  .body { flex:1; min-width:0; }
+  .ttl { font-size:14.5px; line-height:1.35; letter-spacing:-.005em; word-break:break-word; }
+  .row.done .ttl { color:var(--faint); text-decoration:line-through; text-decoration-color:var(--faint); }
+  .meta { display:flex; align-items:center; gap:10px; margin-top:5px; }
+  .prio { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); background:none; border:none; cursor:pointer; padding:0; }
+  .dot { width:7px; height:7px; border-radius:999px; }
+  .due { display:flex; align-items:center; gap:4px; font-family:var(--mono); font-size:10.5px; color:var(--muted); white-space:nowrap; }
+  .due.overdue { color:var(--p-alta); font-weight:500; }
+  .thumb { display:block; margin-top:7px; padding:0; border:1px solid var(--border); border-radius:min(var(--radius),10px);
+    overflow:hidden; background:var(--sunk); cursor:zoom-in; line-height:0; }
+  .thumb img { display:block; width:104px; height:64px; object-fit:cover; }
+  .del { flex-shrink:0; width:24px; height:24px; display:grid; place-items:center; cursor:pointer; background:none;
+    border:none; color:var(--faint); opacity:0; transition:opacity .12s; border-radius:var(--radius); }
+  .row:hover .del { opacity:1; }
+  .sec { display:flex; align-items:center; gap:8px; padding:14px 8px 6px; font-family:var(--mono);
+    font-size:10.5px; color:var(--faint); text-transform:uppercase; letter-spacing:.08em; }
+  .sec .line { flex:1; height:1px; background:var(--border); }
+  /* compose card */
+  .compose { border:1px solid var(--accent); border-radius:11px; padding:10px; margin:2px 0 8px; background:var(--bg); }
+  .compose .lbl { display:flex; align-items:center; gap:7px; margin-bottom:9px; font-family:var(--mono);
+    font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; }
+  .compose img { display:block; width:100%; height:116px; object-fit:cover; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:9px; }
+  .compose input { width:100%; border:1px solid var(--border); outline:none; background:var(--surface);
+    border-radius:var(--radius); padding:9px 11px; font:14px 'Geist',system-ui,sans-serif; color:var(--text); margin-bottom:9px; }
+  .compose .acts { display:flex; gap:7px; }
+  .btn-primary { flex:1; padding:8px; border-radius:var(--radius); border:none; cursor:pointer;
+    background:var(--accent); color:var(--on-accent); font:600 13px 'Geist',system-ui,sans-serif; }
+  .btn-ghost { padding:8px 14px; border-radius:var(--radius); cursor:pointer; border:1px solid var(--border);
+    background:transparent; color:var(--muted); font:500 13px 'Geist',system-ui,sans-serif; }
+  /* add */
+  .add-wrap { border-top:1px solid var(--border); background:var(--bg); padding:10px 12px; }
+  .add-row { display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:8px; transition:border-color .14s; }
+  .add-row:focus-within { border-color:var(--accent); }
+  .add-row input { flex:1; border:none; outline:none; background:transparent; font:14px 'Geist',system-ui,sans-serif; color:var(--text); min-width:0; }
+  .cam, .add-btn { flex-shrink:0; width:30px; height:30px; border-radius:7px; display:grid; place-items:center; cursor:pointer; }
+  .cam { border:1px solid var(--border); background:transparent; color:var(--muted); }
+  .add-btn { border:none; background:var(--sunk); color:var(--faint); }
+  .add-btn.on { background:var(--accent); color:var(--on-accent); }
+  /* lightbox */
+  .lightbox { position:fixed; inset:0; z-index:30; cursor:zoom-out; background:rgba(12,12,11,.72);
+    display:none; align-items:center; justify-content:center; padding:22px; }
+  .lightbox.show { display:flex; }
+  .lightbox img { max-width:100%; max-height:100%; border-radius:11px; box-shadow:0 20px 50px rgba(0,0,0,.5); }
+  .empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;
+    gap:10px; color:var(--faint); text-align:center; padding:24px; }
+  .empty .circle { width:44px; height:44px; border-radius:999px; border:1.6px solid var(--border); display:grid; place-items:center; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <div>
+      <h1>Tareas</h1>
+      <div class="count" id="count">—</div>
+    </div>
+    <button class="icon-btn" id="theme" title="Cambiar tema"></button>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="list" id="list"></div>
+
+  <div class="add-wrap">
+    <div class="add-row">
+      <button class="cam" id="cam" title="Tarea con captura de pantalla"></button>
+      <input id="draft" placeholder="Agregar tarea…" />
+      <button class="add-btn" id="add"></button>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox"><img id="lightbox-img" alt="captura" /></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
