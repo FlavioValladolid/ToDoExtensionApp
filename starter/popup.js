@@ -25,6 +25,7 @@ const SVG = {
   sun: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
   moon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
   expand: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
+  link: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
 };
 
 /* ---------- fechas ---------- */
@@ -84,13 +85,19 @@ async function capture() {
   return cv.toDataURL('image/png');
 }
 
+async function captureUrl() {
+  if (!window.chrome?.tabs) return null;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab?.url || null;
+}
+
 /* =========================================================================
    estado + render
    ========================================================================= */
 let tasks = [];
 let filter = 'todas';
 let compose = null;          // { shot, name }
-let draftPrio = 'none', draftCat = 'personal', draftDue = null;
+let draftPrio = 'none', draftCat = 'personal', draftDue = null, draftUrl = null;
 
 const $ = (id) => document.getElementById(id);
 const IS_TAB = location.pathname.includes('tab.html');
@@ -104,6 +111,15 @@ async function init() {
   $('cam').innerHTML = SVG.cam;
   $('add').innerHTML = SVG.plus;
   $('cam').addEventListener('click', startCapture);
+  const urlBtn = $('url-btn');
+  if (urlBtn) {
+    urlBtn.innerHTML = SVG.link;
+    urlBtn.addEventListener('click', async () => {
+      if (draftUrl) { draftUrl = null; syncUrlBtn(); return; }
+      draftUrl = await captureUrl();
+      syncUrlBtn();
+    });
+  }
   const expandBtn = $('expand');
   if (expandBtn) {
     expandBtn.innerHTML = SVG.expand;
@@ -135,6 +151,10 @@ function syncTheme() {
   $('theme').innerHTML = dark ? SVG.sun : SVG.moon;
 }
 function syncAddBtn() { $('add').classList.toggle('on', !!$('draft').value.trim()); }
+function syncUrlBtn() {
+  const btn = $('url-btn');
+  if (btn) btn.classList.toggle('on', !!draftUrl);
+}
 
 function commit() { saveTasks(tasks); render(); renderTabs(); }
 
@@ -152,11 +172,20 @@ function renderTabs() {
   });
 }
 
+function urlLink(url) {
+  try {
+    const domain = new URL(url).hostname.replace('www.', '');
+    const favicon = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=16';
+    return '<a class="url-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer"><img class="url-favicon" src="' + favicon + '" width="12" height="12" alt="">' + escapeHtml(domain) + '</a>';
+  } catch { return ''; }
+}
+
 function rowHTML(t) {
   const due = fmtDue(t.due), p = PRIORITIES[t.priority];
-  const meta = (!t.done && (t.priority !== 'none' || due)) ? `<div class="meta">
+  const meta = (!t.done && (t.priority !== 'none' || due || t.url)) ? `<div class="meta">
     ${t.priority !== 'none' ? `<button class="prio" data-prio="${t.id}"><span class="dot" style="background:${p.dot}"></span>${p.label}</button>` : ''}
     ${due ? `<span class="due ${due.overdue?'overdue':''}">${SVG.cal} ${due.label}</span>` : ''}
+    ${t.url ? urlLink(t.url) : ''}
   </div>` : '';
   const thumb = t.shot ? `<button class="thumb" data-zoom="${t.id}"><img src="${t.shot}" alt="captura"></button>` : '';
   return `<div class="row ${t.done?'done':''}" data-id="${t.id}">
@@ -222,6 +251,9 @@ function wire(list) {
       $('lightbox').classList.add('show');
     }
   });
+  list.querySelectorAll('.url-favicon').forEach(img => {
+    img.addEventListener('error', () => { img.style.display = 'none'; });
+  });
   // compose card
   const name = $('compose-name');
   if (name) {
@@ -249,8 +281,8 @@ function addDraft() {
   const v = $('draft').value.trim();
   if (!v) return;
   tasks = [{ id: Date.now(), text: v, done: false, priority: draftPrio,
-    cat: filter !== 'todas' ? filter : draftCat, due: draftDue }, ...tasks];
-  $('draft').value = ''; draftPrio = 'none'; draftDue = null; syncAddBtn(); commit();
+    cat: filter !== 'todas' ? filter : draftCat, due: draftDue, url: draftUrl || undefined }, ...tasks];
+  $('draft').value = ''; draftPrio = 'none'; draftDue = null; draftUrl = null; syncAddBtn(); syncUrlBtn(); commit();
 }
 
 function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
