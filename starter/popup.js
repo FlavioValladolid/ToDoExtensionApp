@@ -86,9 +86,9 @@ async function capture() {
 }
 
 async function captureUrl() {
-  if (!window.chrome?.tabs) return null;
+  if (!window.chrome?.tabs) return { url: null, pageTitle: null };
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  return tab?.url || null;
+  return { url: tab?.url || null, pageTitle: tab?.title || null };
 }
 
 /* =========================================================================
@@ -97,7 +97,7 @@ async function captureUrl() {
 let tasks = [];
 let filter = 'todas';
 let compose = null;          // { shot, name }
-let draftPrio = 'none', draftCat = 'personal', draftDue = null, draftUrl = null;
+let draftPrio = 'none', draftCat = 'personal', draftDue = null, draftUrl = null, draftPageTitle = null;
 
 const $ = (id) => document.getElementById(id);
 const IS_TAB = location.pathname.includes('tab.html');
@@ -115,8 +115,10 @@ async function init() {
   if (urlBtn) {
     urlBtn.innerHTML = SVG.link;
     urlBtn.addEventListener('click', async () => {
-      if (draftUrl) { draftUrl = null; syncUrlBtn(); return; }
-      draftUrl = await captureUrl();
+      if (draftUrl) { draftUrl = null; draftPageTitle = null; syncUrlBtn(); return; }
+      const { url, pageTitle } = await captureUrl();
+      draftUrl = url;
+      draftPageTitle = pageTitle;
       syncUrlBtn();
     });
   }
