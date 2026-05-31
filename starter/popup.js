@@ -2,6 +2,57 @@
    Recreación del prototipo de diseño. Funciona dentro de Chrome (chrome.storage +
    chrome.tabs.captureVisibleTab) y también standalone en el navegador (fallbacks). */
 
+const STRINGS = {
+  es: {
+    appTitle: 'Tareas',
+    addPlaceholder: 'Agregar tarea…',
+    allDone: 'todo listo',
+    pending: (n) => `${n} pendiente${n > 1 ? 's' : ''}`,
+    completed: 'Completadas',
+    emptyTitle: 'Nada por aquí',
+    emptyHint: 'Agrega tu primera tarea abajo',
+    captureLabel: 'Nueva captura',
+    composePlaceholder: 'Nombre de la actividad…',
+    composeSave: 'Guardar tarea',
+    composeCancel: 'Cancelar',
+    screenshotName: 'Captura de pantalla',
+    today: 'Hoy', tomorrow: 'Mañana', yesterday: 'Ayer',
+    days: ['dom','lun','mar','mié','jue','vie','sáb'],
+    months: ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'],
+    priorities: { none: 'Sin prioridad', alta: 'Alta', media: 'Media', baja: 'Baja' },
+    cats: { todas: 'Todas', trabajo: 'Trabajo', personal: 'Personal', compras: 'Compras' },
+    camTitle: 'Tarea con captura de pantalla',
+    urlTitle: 'Guardar URL de esta página',
+    expandTitle: 'Abrir en pestaña',
+    themeTitle: 'Cambiar tema',
+    langTitle: 'Switch to English',
+  },
+  en: {
+    appTitle: 'Tasks',
+    addPlaceholder: 'Add task…',
+    allDone: 'all done',
+    pending: (n) => `${n} task${n > 1 ? 's' : ''} left`,
+    completed: 'Completed',
+    emptyTitle: 'Nothing here',
+    emptyHint: 'Add your first task below',
+    captureLabel: 'New capture',
+    composePlaceholder: 'Activity name…',
+    composeSave: 'Save task',
+    composeCancel: 'Cancel',
+    screenshotName: 'Screenshot',
+    today: 'Today', tomorrow: 'Tomorrow', yesterday: 'Yesterday',
+    days: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    priorities: { none: 'No priority', alta: 'High', media: 'Medium', baja: 'Low' },
+    cats: { todas: 'All', trabajo: 'Work', personal: 'Personal', compras: 'Shopping' },
+    camTitle: 'Task with screenshot',
+    urlTitle: 'Save page URL',
+    expandTitle: 'Open in tab',
+    themeTitle: 'Change theme',
+    langTitle: 'Cambiar a español',
+  }
+};
+
 const PRIORITIES = {
   none:  { label: 'Sin prioridad', dot: 'transparent' },
   alta:  { label: 'Alta',  dot: 'var(--p-alta)' },
@@ -29,23 +80,24 @@ const SVG = {
 };
 
 /* ---------- fechas ---------- */
-const DOW = ['dom','lun','mar','mié','jue','vie','sáb'];
-const MON = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const todayISO = () => { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); };
 const isoToDate = (iso) => { const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d); };
 function fmtDue(iso) {
   if (!iso) return null;
+  const S = STRINGS[lang];
   const d = isoToDate(iso); d.setHours(0,0,0,0);
   const diff = Math.round((d - isoToDate(todayISO())) / 86400000);
   let label;
-  if (diff === 0) label = 'Hoy'; else if (diff === 1) label = 'Mañana';
-  else if (diff === -1) label = 'Ayer'; else label = `${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`;
+  if (diff === 0) label = S.today;
+  else if (diff === 1) label = S.tomorrow;
+  else if (diff === -1) label = S.yesterday;
+  else label = `${S.days[d.getDay()]} ${d.getDate()} ${S.months[d.getMonth()]}`;
   return { label, overdue: diff < 0, soon: diff === 0 || diff === 1 };
 }
 
 function fmtCreated(id) {
   const d = new Date(id);
-  return `${d.getDate()} ${MON[d.getMonth()]}`;
+  return `${d.getDate()} ${STRINGS[lang].months[d.getMonth()]}`;
 }
 
 /* ---------- almacenamiento ---------- */
@@ -106,6 +158,8 @@ let draftPrio = 'none', draftCat = 'personal', draftDue = null, draftUrl = null,
 
 const $ = (id) => document.getElementById(id);
 const IS_TAB = location.pathname.includes('tab.html');
+let lang = localStorage.getItem('todo_lang') ||
+           (navigator.language?.startsWith('es') ? 'es' : 'en');
 
 async function init() {
   tasks = await loadTasks();
@@ -113,6 +167,8 @@ async function init() {
   const saved = localStorage.getItem('todo_theme');
   if (saved === 'dark') document.documentElement.dataset.theme = 'dark';
   $('theme').addEventListener('click', toggleTheme);
+  const langBtn = $('lang-btn');
+  if (langBtn) langBtn.addEventListener('click', toggleLang);
   $('cam').innerHTML = SVG.cam;
   $('add').innerHTML = SVG.plus;
   $('cam').addEventListener('click', startCapture);
@@ -144,7 +200,7 @@ async function init() {
   $('draft').addEventListener('input', syncAddBtn);
   $('draft').addEventListener('keydown', (e) => { if (e.key === 'Enter') addDraft(); });
   $('lightbox').addEventListener('click', () => $('lightbox').classList.remove('show'));
-  renderTabs(); render(); syncTheme();
+  renderTabs(); render(); syncTheme(); applyStaticStrings(); syncLangBtn();
 }
 
 function toggleTheme() {
@@ -157,6 +213,35 @@ function syncTheme() {
   const dark = document.documentElement.dataset.theme === 'dark';
   $('theme').innerHTML = dark ? SVG.sun : SVG.moon;
 }
+function applyStaticStrings() {
+  const S = STRINGS[lang];
+  const h1 = document.querySelector('h1');
+  if (h1) h1.textContent = S.appTitle;
+  const draft = $('draft');
+  if (draft) draft.placeholder = S.addPlaceholder;
+  const cam = $('cam');
+  if (cam) cam.title = S.camTitle;
+  const urlBtn = $('url-btn');
+  if (urlBtn) urlBtn.title = S.urlTitle;
+  const expandBtn = $('expand');
+  if (expandBtn) expandBtn.title = S.expandTitle;
+  const themeBtn = $('theme');
+  if (themeBtn) themeBtn.title = S.themeTitle;
+}
+function syncLangBtn() {
+  const btn = $('lang-btn');
+  if (!btn) return;
+  btn.textContent = lang === 'es' ? 'EN' : 'ES';
+  btn.title = STRINGS[lang].langTitle;
+}
+function toggleLang() {
+  lang = lang === 'es' ? 'en' : 'es';
+  localStorage.setItem('todo_lang', lang);
+  applyStaticStrings();
+  syncLangBtn();
+  renderTabs();
+  render();
+}
 function syncAddBtn() { $('add').classList.toggle('on', !!$('draft').value.trim()); }
 function syncUrlBtn() {
   const btn = $('url-btn');
@@ -167,8 +252,9 @@ function commit() { saveTasks(tasks); render(); renderTabs(); }
 
 function renderTabs() {
   const wrap = $('tabs');
+  const S = STRINGS[lang];
   const pendBy = (id) => tasks.filter(t => !t.done && (id === 'todas' || t.cat === id)).length;
-  const items = [{ id: 'todas', label: 'Todas' }, ...CATS];
+  const items = [{ id: 'todas', label: S.cats.todas }, ...CATS.map(c => ({ id: c.id, label: S.cats[c.id] }))];
   wrap.innerHTML = items.map(c =>
     `<button class="chip ${filter===c.id?'active':''}" data-f="${c.id}">${c.label}<span class="n">${pendBy(c.id)}</span></button>`
   ).join('');
@@ -191,8 +277,9 @@ function urlLink(url) {
 
 function rowHTML(t) {
   const due = fmtDue(t.due), p = PRIORITIES[t.priority];
+  const S = STRINGS[lang];
   const meta = !t.done ? `<div class="meta">
-    ${t.priority !== 'none' ? `<button class="prio" data-prio="${t.id}"><span class="dot" style="background:${p.dot}"></span>${p.label}</button>` : ''}
+    ${t.priority !== 'none' ? `<button class="prio" data-prio="${t.id}"><span class="dot" style="background:${p.dot}"></span>${S.priorities[t.priority]}</button>` : ''}
     ${due ? `<span class="due ${due.overdue?'overdue':''}">${SVG.cal} ${due.label}</span>` : ''}
     ${t.url ? urlLink(t.url) : ''}
     <span class="due">${fmtCreated(t.id)}</span>
@@ -207,34 +294,36 @@ function rowHTML(t) {
 
 function render() {
   const list = $('list');
+  const S = STRINGS[lang];
   const visible = tasks.filter(t => filter === 'todas' || t.cat === filter);
   const pw = { alta:0, media:1, baja:2, none:3 };
   const pend = visible.filter(t => !t.done).sort((a,b) => (pw[a.priority]-pw[b.priority]) || ((a.due||'9999')<(b.due||'9999')?-1:1));
   const done = visible.filter(t => t.done);
   const pendCount = visible.filter(t => !t.done).length;
-  $('count').textContent = pendCount === 0 ? 'todo listo' : `${pendCount} pendiente${pendCount>1?'s':''}`;
+  $('count').textContent = pendCount === 0 ? S.allDone : S.pending(pendCount);
 
   let html = '';
   if (compose) html += composeHTML();
   if (pend.length === 0 && done.length === 0 && !compose) {
     html += `<div class="empty"><div class="circle">${SVG.check}</div>
-      <div style="font-size:13.5px;color:var(--muted)">Nada por aquí</div>
-      <div style="font-size:12px;color:var(--faint)">Agrega tu primera tarea abajo</div></div>`;
+      <div style="font-size:13.5px;color:var(--muted)">${S.emptyTitle}</div>
+      <div style="font-size:12px;color:var(--faint)">${S.emptyHint}</div></div>`;
   }
   html += pend.map(rowHTML).join('');
-  if (done.length) html += `<div class="sec">Completadas<span class="line"></span>${done.length}</div>` + done.map(rowHTML).join('');
+  if (done.length) html += `<div class="sec">${S.completed}<span class="line"></span>${done.length}</div>` + done.map(rowHTML).join('');
   list.innerHTML = html;
   wire(list);
 }
 
 function composeHTML() {
+  const S = STRINGS[lang];
   return `<div class="compose">
-    <div class="lbl">${SVG.cam} Nueva captura</div>
+    <div class="lbl">${SVG.cam} ${S.captureLabel}</div>
     ${compose.shot ? `<img src="${compose.shot}" alt="captura">` : ''}
-    <input id="compose-name" placeholder="Nombre de la actividad…" value="${escapeHtml(compose.name)}">
+    <input id="compose-name" placeholder="${S.composePlaceholder}" value="${escapeHtml(compose.name)}">
     <div class="acts">
-      <button class="btn-primary" id="compose-save">Guardar tarea</button>
-      <button class="btn-ghost" id="compose-cancel">Cancelar</button>
+      <button class="btn-primary" id="compose-save">${S.composeSave}</button>
+      <button class="btn-ghost" id="compose-cancel">${S.composeCancel}</button>
     </div>
   </div>`;
 }
@@ -282,7 +371,7 @@ async function startCapture() {
 }
 function saveCompose() {
   if (!compose) return;
-  const name = (compose.name || '').trim() || 'Captura de pantalla';
+  const name = (compose.name || '').trim() || STRINGS[lang].screenshotName;
   tasks = [{ id: Date.now(), text: name, done: false, priority: 'none',
     cat: filter !== 'todas' ? filter : 'personal', due: null, shot: compose.shot,
     url: draftUrl || undefined, pageTitle: draftPageTitle || undefined }, ...tasks];
