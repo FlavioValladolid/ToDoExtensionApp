@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Tareas</title>
+<style>
+  :root {
+    --bg: #fafaf9; --surface: #fff; --text: #1c1c1a;
+    --muted: #6b6b67; --faint: #b9b9b3; --border: #ececea;
+    --accent: #1c1c1a; --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, 'Helvetica Neue', sans-serif;
+    font-size: 15px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 60px 24px 80px; }
+  header { margin-bottom: 48px; }
+  .app-name {
+    font-size: 22px; font-weight: 700; letter-spacing: -.02em;
+    margin-bottom: 6px;
+  }
+  .subtitle { font-size: 13px; color: var(--muted); }
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 8px; }
+  h2 {
+    font-size: 16px; font-weight: 600; letter-spacing: -.01em;
+    margin: 36px 0 10px; padding-top: 36px;
+    border-top: 1px solid var(--border);
+  }
+  p { margin-bottom: 14px; color: var(--text); }
+  ul { padding-left: 20px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; color: var(--text); }
+  .meta { font-size: 13px; color: var(--muted); margin-bottom: 40px; }
+  .highlight {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px; margin: 24px 0;
+  }
+  .highlight p { margin: 0; }
+  a { color: var(--accent); }
+  .lang-toggle {
+    display: flex; gap: 8px; margin-bottom: 40px;
+  }
+  .lang-btn {
+    padding: 6px 16px; border-radius: 999px; cursor: pointer;
+    font-size: 13px; font-weight: 500; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); transition: all .14s;
+  }
+  .lang-btn.active { background: var(--accent); color: #fff; border-color: transparent; }
+  .lang-section { display: none; }
+  .lang-section.visible { display: block; }
+  footer {
+    margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border);
+    font-size: 13px; color: var(--faint);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="app-name">Tareas</div>
+    <div class="subtitle">Chrome Extension · Privacy Policy</div>
+  </header>
+
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')">English</button>
+    <button class="lang-btn" onclick="setLang('es')">Español</button>
+  </div>
+
+  <!-- ENGLISH -->
+  <div class="lang-section visible" id="en">
+    <h1>Privacy Policy</h1>
+    <p class="meta">Last updated: May 31, 2026</p>
+
+    <div class="highlight">
+      <p><strong>Summary:</strong> Tareas stores your tasks locally on your device. No personal data is collected, sent to, or stored on any external server.</p>
+    </div>
+
+    <h2>What data Tareas stores</h2>
+    <p>Tareas stores the following data <strong>exclusively on your device</strong>, using Chrome's local storage APIs:</p>
+    <ul>
+      <li>Task content (text, priority, category, due date)</li>
+      <li>Screenshots attached to tasks (as Base64 image data)</li>
+      <li>URLs and page titles saved with tasks</li>
+      <li>App preferences (theme: light/dark, language: ES/EN)</li>
+    </ul>
+    <p>This data never leaves your device and is never transmitted to any server.</p>
+
+    <h2>External network requests</h2>
+    <p>When you save a task that includes a URL from a webpage, Tareas loads a favicon (small website icon) from Google's public Favicon API:</p>
+    <ul>
+      <li><code>https://www.google.com/s2/favicons</code></li>
+      <li><code>https://t0.gstatic.com/faviconV2</code></li>
+    </ul>
+    <p>This means the domain name of any URL you save may be sent to Google's servers as part of loading the favicon image. No other data is included in this request. This is the only external network request Tareas makes.</p>
+    <p>If you prefer not to send any data to Google, you can save tasks without including URLs.</p>
+
+    <h2>Permissions</h2>
+    <p>Tareas requests the following browser permissions:</p>
+    <ul>
+      <li><strong>storage</strong> — to save your tasks locally on your device</li>
+      <li><strong>activeTab</strong> — to capture a screenshot of the current tab and read its URL and title when you explicitly click the camera or link button</li>
+    </ul>
+    <p>These permissions are only exercised when you take an explicit action within the extension.</p>
+
+    <h2>Data sharing</h2>
+    <p>Tareas does not share, sell, or transmit your data to any third party other than the Google favicon requests described above.</p>
+
+    <h2>Data deletion</h2>
+    <p>You can delete all data stored by Tareas at any time by:</p>
+    <ul>
+      <li>Removing the extension from Chrome (this deletes all local storage)</li>
+      <li>Clearing Chrome's extension storage via <code>chrome://settings/siteData</code></li>
+    </ul>
+
+    <h2>Children's privacy</h2>
+    <p>Tareas does not knowingly collect any information from children under 13.</p>
+
+    <h2>Contact</h2>
+    <p>For questions about this privacy policy, contact: <a href="mailto:flavioisay@gmail.com">flavioisay@gmail.com</a></p>
+  </div>
+
+  <!-- ESPAÑOL -->
+  <div class="lang-section" id="es">
+    <h1>Política de Privacidad</h1>
+    <p class="meta">Última actualización: 31 de mayo de 2026</p>
+
+    <div class="highlight">
+      <p><strong>Resumen:</strong> Tareas guarda tus tareas localmente en tu dispositivo. No se recopilan, envían ni almacenan datos personales en ningún servidor externo.</p>
+    </div>
+
+    <h2>Qué datos almacena Tareas</h2>
+    <p>Tareas almacena los siguientes datos <strong>exclusivamente en tu dispositivo</strong>, usando las APIs de almacenamiento local de Chrome:</p>
+    <ul>
+      <li>Contenido de las tareas (texto, prioridad, categoría, fecha límite)</li>
+      <li>Capturas de pantalla adjuntas a tareas (como imágenes Base64)</li>
+      <li>URLs y títulos de páginas guardados con tareas</li>
+      <li>Preferencias de la app (tema: claro/oscuro, idioma: ES/EN)</li>
+    </ul>
+    <p>Estos datos nunca salen de tu dispositivo y nunca se transmiten a ningún servidor.</p>
+
+    <h2>Peticiones de red externas</h2>
+    <p>Cuando guardas una tarea que incluye una URL, Tareas carga un favicon (ícono del sitio web) desde la API pública de favicons de Google:</p>
+    <ul>
+      <li><code>https://www.google.com/s2/favicons</code></li>
+      <li><code>https://t0.gstatic.com/faviconV2</code></li>
+    </ul>
+    <p>Esto significa que el nombre de dominio de cualquier URL que guardes puede enviarse a los servidores de Google como parte de la carga del ícono. No se incluye ningún otro dato en esta solicitud. Esta es la única petición de red externa que realiza Tareas.</p>
+    <p>Si prefieres no enviar datos a Google, puedes guardar tareas sin incluir URLs.</p>
+
+    <h2>Permisos</h2>
+    <p>Tareas solicita los siguientes permisos del navegador:</p>
+    <ul>
+      <li><strong>storage</strong> — para guardar tus tareas localmente en tu dispositivo</li>
+      <li><strong>activeTab</strong> — para capturar una captura de pantalla de la pestaña actual y leer su URL y título cuando haces clic en el botón de cámara o de enlace</li>
+    </ul>
+    <p>Estos permisos solo se usan cuando realizas una acción explícita dentro de la extensión.</p>
+
+    <h2>Compartición de datos</h2>
+    <p>Tareas no comparte, vende ni transmite tus datos a ningún tercero, excepto las solicitudes de favicon de Google descritas anteriormente.</p>
+
+    <h2>Eliminación de datos</h2>
+    <p>Puedes eliminar todos los datos almacenados por Tareas en cualquier momento:</p>
+    <ul>
+      <li>Eliminando la extensión de Chrome (esto borra todo el almacenamiento local)</li>
+      <li>Limpiando el almacenamiento de la extensión en <code>chrome://settings/siteData</code></li>
+    </ul>
+
+    <h2>Privacidad de menores</h2>
+    <p>Tareas no recopila deliberadamente información de menores de 13 años.</p>
+
+    <h2>Contacto</h2>
+    <p>Para preguntas sobre esta política de privacidad, escribe a: <a href="mailto:flavioisay@gmail.com">flavioisay@gmail.com</a></p>
+  </div>
+
+  <footer>
+    Tareas Chrome Extension · <a href="https://github.com/FlavioValladolid/ToDoExtensionApp">GitHub</a>
+  </footer>
+
+</div>
+
+<script>
+function setLang(lang) {
+  document.getElementById('en').classList.toggle('visible', lang === 'en');
+  document.getElementById('es').classList.toggle('visible', lang === 'es');
+  document.querySelectorAll('.lang-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'es'));
+  });
+}
+</script>
+</body>
+</html>

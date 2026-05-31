@@ -7,7 +7,7 @@
     "default_popup": "popup.html",
     "default_title": "Tareas"
   },
-  "permissions": ["storage", "activeTab", "tabs"],
+  "permissions": ["storage", "activeTab"],
   "web_accessible_resources": [
     {
       "resources": ["tab.html", "viewer.html"],
