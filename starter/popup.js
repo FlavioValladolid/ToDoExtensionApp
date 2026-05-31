@@ -174,7 +174,9 @@ function renderTabs() {
 
 function urlLink(url) {
   try {
-    const domain = new URL(url).hostname.replace('www.', '');
+    const parsed = new URL(url);
+    if (!['https:', 'http:'].includes(parsed.protocol)) return '';
+    const domain = parsed.hostname.replace(/^www\./, '');
     const favicon = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=16';
     return '<a class="url-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer"><img class="url-favicon" src="' + favicon + '" width="12" height="12" alt="">' + escapeHtml(domain) + '</a>';
   } catch { return ''; }
@@ -259,9 +261,9 @@ function wire(list) {
   if (name) {
     name.focus();
     name.oninput = () => compose.name = name.value;
-    name.onkeydown = (e) => { if (e.key==='Enter') saveCompose(); if (e.key==='Escape') { compose=null; render(); } };
+    name.onkeydown = (e) => { if (e.key==='Enter') saveCompose(); if (e.key==='Escape') { compose=null; draftUrl=null; syncUrlBtn(); render(); } };
     $('compose-save').onclick = saveCompose;
-    $('compose-cancel').onclick = () => { compose = null; render(); };
+    $('compose-cancel').onclick = () => { compose = null; draftUrl = null; syncUrlBtn(); render(); };
   }
 }
 
@@ -275,7 +277,7 @@ function saveCompose() {
   const name = (compose.name || '').trim() || 'Captura de pantalla';
   tasks = [{ id: Date.now(), text: name, done: false, priority: 'none',
     cat: filter !== 'todas' ? filter : 'personal', due: null, shot: compose.shot }, ...tasks];
-  compose = null; commit();
+  compose = null; draftUrl = null; syncUrlBtn(); commit();
 }
 function addDraft() {
   const v = $('draft').value.trim();
