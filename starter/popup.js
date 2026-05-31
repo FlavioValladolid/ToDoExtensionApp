@@ -111,7 +111,9 @@ async function init() {
       expandBtn.style.display = 'none';
     } else {
       expandBtn.addEventListener('click', () => {
-        chrome.tabs.create({ url: chrome.runtime.getURL('tab.html') });
+        if (window.chrome?.tabs) {
+          chrome.tabs.create({ url: chrome.runtime.getURL('tab.html') });
+        }
       });
     }
   }
