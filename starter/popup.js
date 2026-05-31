@@ -43,6 +43,11 @@ function fmtDue(iso) {
   return { label, overdue: diff < 0, soon: diff === 0 || diff === 1 };
 }
 
+function fmtCreated(id) {
+  const d = new Date(id);
+  return `${d.getDate()} ${MON[d.getMonth()]}`;
+}
+
 /* ---------- almacenamiento ---------- */
 const KEY = 'todo_tasks';
 async function loadTasks() {
@@ -186,10 +191,11 @@ function urlLink(url) {
 
 function rowHTML(t) {
   const due = fmtDue(t.due), p = PRIORITIES[t.priority];
-  const meta = (!t.done && (t.priority !== 'none' || due || t.url)) ? `<div class="meta">
+  const meta = !t.done ? `<div class="meta">
     ${t.priority !== 'none' ? `<button class="prio" data-prio="${t.id}"><span class="dot" style="background:${p.dot}"></span>${p.label}</button>` : ''}
     ${due ? `<span class="due ${due.overdue?'overdue':''}">${SVG.cal} ${due.label}</span>` : ''}
     ${t.url ? urlLink(t.url) : ''}
+    <span class="due">${fmtCreated(t.id)}</span>
   </div>` : '';
   const thumb = t.shot ? `<button class="thumb" data-zoom="${t.id}"><img src="${t.shot}" alt="captura"></button>` : '';
   return `<div class="row ${t.done?'done':''}" data-id="${t.id}">
