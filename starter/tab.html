@@ -84,7 +84,10 @@
   .cam, .add-btn { flex-shrink:0; width:30px; height:30px; border-radius:7px; display:grid; place-items:center; cursor:pointer; }
   .cam { border:1px solid var(--border); background:transparent; color:var(--muted); }
   .add-btn { border:none; background:var(--sunk); color:var(--faint); }
-  .add-btn.on { background:var(--accent); color:var(--on-accent); }
+  .cam.on, .add-btn.on { background:var(--accent); color:var(--on-accent); }
+  .url-link { display:flex; align-items:center; gap:4px; font-family:var(--mono); font-size:10.5px; color:var(--muted); text-decoration:none; white-space:nowrap; }
+  .url-link:hover { color:var(--text); }
+  .url-link img { border-radius:2px; flex-shrink:0; }
   .lightbox { position:fixed; inset:0; z-index:30; cursor:zoom-out; background:rgba(12,12,11,.72);
     display:none; align-items:center; justify-content:center; padding:22px; }
   .lightbox.show { display:flex; }
