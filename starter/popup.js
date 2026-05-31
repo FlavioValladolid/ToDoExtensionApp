@@ -194,7 +194,7 @@ function rowHTML(t) {
   const thumb = t.shot ? `<button class="thumb" data-zoom="${t.id}"><img src="${t.shot}" alt="captura"></button>` : '';
   return `<div class="row ${t.done?'done':''}" data-id="${t.id}">
     <button class="cbx ${t.done?'done':''}" data-toggle="${t.id}">${t.done?SVG.check:''}</button>
-    <div class="body"><div class="ttl">${escapeHtml(t.text)}</div>${meta}${thumb}</div>
+    <div class="body"><div class="ttl">${escapeHtml(t.text)}</div>${t.pageTitle ? `<div class="page-title">${escapeHtml(t.pageTitle)}</div>` : ''}${meta}${thumb}</div>
     <button class="del" data-del="${t.id}">${SVG.x}</button>
   </div>`;
 }
@@ -263,9 +263,9 @@ function wire(list) {
   if (name) {
     name.focus();
     name.oninput = () => compose.name = name.value;
-    name.onkeydown = (e) => { if (e.key==='Enter') saveCompose(); if (e.key==='Escape') { compose=null; draftUrl=null; syncUrlBtn(); render(); } };
+    name.onkeydown = (e) => { if (e.key==='Enter') saveCompose(); if (e.key==='Escape') { compose=null; draftUrl=null; draftPageTitle=null; syncUrlBtn(); render(); } };
     $('compose-save').onclick = saveCompose;
-    $('compose-cancel').onclick = () => { compose = null; draftUrl = null; syncUrlBtn(); render(); };
+    $('compose-cancel').onclick = () => { compose = null; draftUrl = null; draftPageTitle = null; syncUrlBtn(); render(); };
   }
 }
 
@@ -278,15 +278,17 @@ function saveCompose() {
   if (!compose) return;
   const name = (compose.name || '').trim() || 'Captura de pantalla';
   tasks = [{ id: Date.now(), text: name, done: false, priority: 'none',
-    cat: filter !== 'todas' ? filter : 'personal', due: null, shot: compose.shot }, ...tasks];
-  compose = null; draftUrl = null; syncUrlBtn(); commit();
+    cat: filter !== 'todas' ? filter : 'personal', due: null, shot: compose.shot,
+    url: draftUrl || undefined, pageTitle: draftPageTitle || undefined }, ...tasks];
+  compose = null; draftUrl = null; draftPageTitle = null; syncUrlBtn(); commit();
 }
 function addDraft() {
   const v = $('draft').value.trim();
   if (!v) return;
   tasks = [{ id: Date.now(), text: v, done: false, priority: draftPrio,
-    cat: filter !== 'todas' ? filter : draftCat, due: draftDue, url: draftUrl || undefined }, ...tasks];
-  $('draft').value = ''; draftPrio = 'none'; draftDue = null; draftUrl = null; syncAddBtn(); syncUrlBtn(); commit();
+    cat: filter !== 'todas' ? filter : draftCat, due: draftDue,
+    url: draftUrl || undefined, pageTitle: draftPageTitle || undefined }, ...tasks];
+  $('draft').value = ''; draftPrio = 'none'; draftDue = null; draftUrl = null; draftPageTitle = null; syncAddBtn(); syncUrlBtn(); commit();
 }
 
 function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
