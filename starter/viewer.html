@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Captura</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #000;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  img {
+    max-width: 100vw;
+    max-height: 100vh;
+    object-fit: contain;
+    display: block;
+  }
+  .close {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    display: grid;
+    place-items: center;
+    transition: background .14s;
+  }
+  .close:hover { background: rgba(255,255,255,.28); }
+</style>
+</head>
+<body>
+  <button class="close" id="close" title="Cerrar (Esc)">✕</button>
+  <img id="img" alt="captura de pantalla">
+  <script>
+    async function load() {
+      const r = await chrome.storage.local.get('todo_preview_img');
+      if (r.todo_preview_img) {
+        document.getElementById('img').src = r.todo_preview_img;
+        chrome.storage.local.remove('todo_preview_img');
+      }
+    }
+    load();
+    document.getElementById('close').onclick = () => window.close();
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') window.close(); });
+  </script>
+</body>
+</html>
