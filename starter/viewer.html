@@ -43,6 +43,7 @@
   <img id="img" alt="captura de pantalla">
   <script>
     async function load() {
+      if (!window.chrome?.storage?.local) return;
       const r = await chrome.storage.local.get('todo_preview_img');
       if (r.todo_preview_img) {
         document.getElementById('img').src = r.todo_preview_img;
